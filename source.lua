@@ -18,3 +18,5 @@ function Init()
         Beep(1)       
     end
 end
+
+Init()
