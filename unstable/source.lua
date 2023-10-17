@@ -46,6 +46,8 @@ local Speaker = GetPartFromPort(3, "Speaker") or zephyr.crashSystem("A Speaker i
 local Disk = GetPartFromPort(4, "Disk") or zephyr.crashSystem("A Disk is required to run zephyr")
 
 local Version = "0.0"
+local Unstable = true
+
 local ScreenSize = Screen:GetDimensions()
 
 local Cursors = Screen:GetCursors()
@@ -56,8 +58,14 @@ zephyr.Keyboard = Keyboard
 zephyr.Speaker = Speaker
 zephyr.Disk = Disk
 
+zephyr.Unstable = Unstable
 zephyr.Version = Version
 zephyr.ScreenSize = ScreenSize
+
+if Unstable == true then
+    Version = Version .. " (Unstable)"
+    zephyr.Version = Version
+end
 
 zephyr.icons = {
     ["cursor"] = 7091753340,
@@ -112,7 +120,7 @@ function zephyr:Start()
             BackgroundTransparency=1,
             TextTransparency=0.5,
             TextColor3=Color3.fromRGB(255, 255, 255),
-            Text=("zephyrOS %s (In Development)\nWaste of Space - Stable"):format(Version),
+            Text=("zephyrOS %s\nWaste of Space - Stable"):format(Version),
             Font="Gotham",
             TextXAlignment="Right",
             TextScaled=true
@@ -163,7 +171,7 @@ function zephyr:Start()
                     BackgroundTransparency=1,
                     TextColor3=Color3.fromRGB(255, 255, 255),
                     TextScaled=true,
-                    Text=("zephyrOS %s"):format(Version),
+                    Text="zephyr",
                     Font="Gotham"
                 })
                 StartMenu:AddChild(Title)
