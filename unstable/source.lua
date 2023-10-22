@@ -6,9 +6,8 @@ Screen:ClearElements()
 
 function zephyr:CrashSystem(result: string, fatal: boolean)
     Screen:ClearElements()
-    local Error
-    if fatal == true then
-        Error = Screen:CreateElement("TextLabel", {
+    if fatal == true and fatal ~= nil then
+        Screen:CreateElement("TextLabel", {
             Size=UDim2.fromScale(1, 1),
             Position=UDim2.fromScale(0, 0),
             BackgroundColor3=Color3.fromRGB(0, 0, 0),
@@ -20,12 +19,12 @@ function zephyr:CrashSystem(result: string, fatal: boolean)
             ZIndex=9999,
         })
     else
-        Error = Screen:CreateElement("TextLabel", {
+        Screen:CreateElement("TextLabel", {
             Size=UDim2.fromScale(1, 1),
             Position=UDim2.fromScale(0, 0),
             BackgroundColor3=Color3.fromRGB(0, 0, 0),
             TextColor3=Color3.fromRGB(255, 255, 255),
-            Text=("zephyrOS has encountered an error, so a force shutdown has been executed.\n\n<b>%s</b>\n\nYou will need to force restart your microcontroller to continue using zephyrOS."):format(result),
+            Text=("zephyrOS has encountered an error, so a force shutdown has been executed.\n\n<b>%s</b>"):format(result),
             Font="Gotham",
             TextScaled=true,
             RichText=true,
@@ -33,7 +32,7 @@ function zephyr:CrashSystem(result: string, fatal: boolean)
         })
     end
     Beep(0.5)
-    if fatal == true then
+    if fatal == true and fatal ~= nil then
         wait(9e9)
     else
         wait(10)
@@ -52,6 +51,8 @@ local ScreenSize = Screen:GetDimensions()
 
 local Cursors = Screen:GetCursors()
 
+local Desktop
+
 zephyr.Screen = Screen
 zephyr.TouchScreen = Screen
 zephyr.Keyboard = Keyboard
@@ -62,9 +63,19 @@ zephyr.Unstable = Unstable
 zephyr.Version = Version
 zephyr.ScreenSize = ScreenSize
 
+zephyr.Desktop = Desktop
+
 if Unstable == true then
     Version = Version .. " (Unstable)"
     zephyr.Version = Version
+end
+
+function zephyr:GetUnstableColor()
+    if Unstable == true then
+        return Color3.fromRGB(65, 27, 27)
+    else
+        return Color3.fromRGB(30, 30, 30)
+    end
 end
 
 zephyr.icons = {
@@ -93,11 +104,11 @@ function zephyr:Start()
             end
         end)
 
-        local Desktop = Screen:CreateElement("TextLabel", {
+        Desktop = Screen:CreateElement("TextLabel", {
             Size=UDim2.fromScale(1, 0.9),
             Position=UDim2.fromScale(0, 0),
             BackgroundColor3=Color3.fromRGB(0, 0, 0),
-            TextColor3=Color3.fromRGB(30, 30, 30),
+            TextColor3=zephyr:GetUnstableColor(),
             Text="zephyr",
             Font="FredokaOne",
             TextStrokeTransparency=0,
@@ -120,7 +131,7 @@ function zephyr:Start()
             BackgroundTransparency=1,
             TextTransparency=0.5,
             TextColor3=Color3.fromRGB(255, 255, 255),
-            Text=("zephyrOS %s\nWaste of Space - Stable"):format(Version),
+            Text=("zephyrOS %s\nWaste of Space (Stable)"):format(Version),
             Font="Gotham",
             TextXAlignment="Right",
             TextScaled=true
@@ -132,7 +143,7 @@ function zephyr:Start()
             Position=UDim2.fromScale(0, 0),
             BackgroundColor3=Color3.fromRGB(30, 30, 30),
             BorderColor3=Color3.fromRGB(255, 255, 255),
-            TextColor3=Color3.fromRGB(30, 30, 30),
+            TextColor3=zephyr:GetUnstableColor(),
             TextStrokeTransparency=0,
             TextStrokeColor3=Color3.fromRGB(255, 255, 255),
             TextScaled=true,
@@ -142,14 +153,15 @@ function zephyr:Start()
         Taskbar:AddChild(StartButton)
 
         local zephyrLua = Screen:CreateElement("TextButton", {
-            Size=UDim2.fromScale(0.2, 1),
+            Size=UDim2.fromScale(0.22, 1),
             Position=UDim2.fromScale(0.07, 0),
             BackgroundColor3=Color3.fromRGB(30, 30, 30),
             BorderColor3=Color3.fromRGB(255, 255, 255),
             TextColor3=Color3.fromRGB(255, 255, 255),
             TextScaled=true,
-            Text="zephyr.lua",
-            Font="Gotham"
+            Text="zephyr.lua <b>Experimental</b>",
+            Font="Gotham",
+            RichText=true,
         })
         Taskbar:AddChild(zephyrLua)
 
@@ -166,7 +178,7 @@ function zephyr:Start()
                 Desktop:AddChild(StartMenu)
 
                 local Title = Screen:CreateElement("TextLabel", {
-                    Size=UDim2.fromScale(1, 0.1),
+                    Size=UDim2.fromScale(1, 0.12),
                     Position=UDim2.fromScale(0, 0),
                     BackgroundTransparency=1,
                     TextColor3=Color3.fromRGB(255, 255, 255),
@@ -176,22 +188,239 @@ function zephyr:Start()
                 })
                 StartMenu:AddChild(Title)
 
-                local RestartButton = Screen:CreateElement("TextButton", {
+                local RebootButton = Screen:CreateElement("TextButton", {
                     Size=UDim2.fromScale(1, 0.1),
                     Position=UDim2.fromScale(0, 0.9),
                     BackgroundColor3=Color3.fromRGB(30, 30, 30),
                     BorderColor3=Color3.fromRGB(255, 255, 255),
                     TextColor3=Color3.fromRGB(255, 255, 255),
                     TextScaled=true,
-                    Text="Restart",
+                    Text="Reboot",
                     Font="Gotham"
                 })
-                StartMenu:AddChild(RestartButton)
+                StartMenu:AddChild(RebootButton)
 
-                RestartButton.MouseButton1Click:Connect(function()
+                RebootButton.MouseButton1Click:Connect(function()
                     Screen:ClearElements()
                     wait(0.1)
                     zephyr:Start()
+                end)
+
+                local Programs = Screen:CreateElement("ScrollingFrame", {
+                    Size=UDim2.fromScale(1, 0.78),
+                    Position=UDim2.fromScale(0, 0.12),
+                    BackgroundColor3=Color3.fromRGB(30, 30, 30),
+                    BorderColor3=Color3.fromRGB(255, 255, 255),
+                    CanvasSize=UDim2.new(1, 0, 0, 1000),
+                    ScrollBarThickness=0,
+                    ElasticBehavior=0
+                })
+                StartMenu:AddChild(Programs)
+
+                local TotalPrograms = 0
+                function MakeProgram(text: string)
+                    local Program = Screen:CreateElement("TextButton", {
+                        Size=UDim2.fromScale(1, 0.022),
+                        Position=UDim2.fromScale(0, (TotalPrograms * 0.022)),
+                        TextColor3=Color3.fromRGB(255, 255, 255),
+                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
+                        BorderColor3=Color3.fromRGB(255, 255, 255),
+                        Text=text,
+                        TextScaled=true,
+                        Font="Gotham",
+                    })
+                    Programs:AddChild(Program)
+                    TotalPrograms += 1
+                    return Program
+                end
+
+                local CalculatorProgram = MakeProgram("Calculator")
+                CalculatorProgram.MouseButton1Click:Connect(function()
+                    StartMenu:Destroy()
+                    zephyr.states["start_menu_opened"] = false
+
+                    local Window = zephyr:CreateWindow("Calculator")
+                    
+                    local Num1 = Screen:CreateElement("TextLabel", {
+                        Size=UDim2.fromScale(0.4, 0.2),
+                        Position=UDim2.fromScale(0, 0),
+                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
+                        BorderColor3=Color3.fromRGB(255, 255, 255),
+                        TextColor3=Color3.fromRGB(255, 255, 255),
+                        TextScaled=true,
+                        Text="",
+                        Font="Gotham"
+                    })
+                    local Type = Screen:CreateElement("TextLabel", {
+                        Size=UDim2.fromScale(0.2, 0.2),
+                        Position=UDim2.fromScale(0.4, 0),
+                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
+                        BorderColor3=Color3.fromRGB(255, 255, 255),
+                        TextColor3=Color3.fromRGB(255, 255, 255),
+                        TextScaled=true,
+                        Text="",
+                        Font="Gotham"
+                    })
+                    local Num2 = Screen:CreateElement("TextLabel", {
+                        Size=UDim2.fromScale(0.4, 0.2),
+                        Position=UDim2.fromScale(0.6, 0),
+                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
+                        BorderColor3=Color3.fromRGB(255, 255, 255),
+                        TextColor3=Color3.fromRGB(255, 255, 255),
+                        TextScaled=true,
+                        Text="",
+                        Font="Gotham"
+                    })
+                    Window:AddChild(Num1)
+                    Window:AddChild(Type)
+                    Window:AddChild(Num2)
+
+                    local Add = Screen:CreateElement("TextButton", {
+                        Size=UDim2.fromScale(0.2, 0.1),
+                        Position=UDim2.fromScale(0, 0.2),
+                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
+                        BorderColor3=Color3.fromRGB(255, 255, 255),
+                        TextColor3=Color3.fromRGB(255, 255, 255),
+                        TextScaled=true,
+                        Text="+",
+                        Font="Gotham"
+                    })
+                    local Subtract = Screen:CreateElement("TextButton", {
+                        Size=UDim2.fromScale(0.2, 0.1),
+                        Position=UDim2.fromScale(0.2, 0.2),
+                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
+                        BorderColor3=Color3.fromRGB(255, 255, 255),
+                        TextColor3=Color3.fromRGB(255, 255, 255),
+                        TextScaled=true,
+                        Text="-",
+                        Font="Gotham"
+                    })
+                    local Multiply = Screen:CreateElement("TextButton", {
+                        Size=UDim2.fromScale(0.2, 0.1),
+                        Position=UDim2.fromScale(0.4, 0.2),
+                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
+                        BorderColor3=Color3.fromRGB(255, 255, 255),
+                        TextColor3=Color3.fromRGB(255, 255, 255),
+                        TextScaled=true,
+                        Text="×",
+                        Font="Gotham"
+                    })
+                    local Divide = Screen:CreateElement("TextButton", {
+                        Size=UDim2.fromScale(0.2, 0.1),
+                        Position=UDim2.fromScale(0.6, 0.2),
+                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
+                        BorderColor3=Color3.fromRGB(255, 255, 255),
+                        TextColor3=Color3.fromRGB(255, 255, 255),
+                        TextScaled=true,
+                        Text="÷",
+                        Font="Gotham"
+                    })
+                    local Equal = Screen:CreateElement("TextButton", {
+                        Size=UDim2.fromScale(0.2, 0.1),
+                        Position=UDim2.fromScale(0.8, 0.2),
+                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
+                        BorderColor3=Color3.fromRGB(255, 255, 255),
+                        TextColor3=Color3.fromRGB(255, 255, 255),
+                        TextScaled=true,
+                        Text="=",
+                        Font="Gotham"
+                    })
+                    Window:AddChild(Add)
+                    Window:AddChild(Subtract)
+                    Window:AddChild(Multiply)
+                    Window:AddChild(Divide)
+                    Window:AddChild(Equal)
+
+                    local Nine = Screen:CreateElement("TextButton", {
+                        Size=UDim2.fromScale(0.333, 0.1),
+                        Position=UDim2.fromScale(0, 0.3),
+                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
+                        BorderColor3=Color3.fromRGB(255, 255, 255),
+                        TextColor3=Color3.fromRGB(255, 255, 255),
+                        TextScaled=true,
+                        Text="=",
+                        Font="Gotham"
+                    })
+                    local Eight = Screen:CreateElement("TextButton", {
+                        Size=UDim2.fromScale(0.333, 0.1),
+                        Position=UDim2.fromScale(0.333, 0.3),
+                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
+                        BorderColor3=Color3.fromRGB(255, 255, 255),
+                        TextColor3=Color3.fromRGB(255, 255, 255),
+                        TextScaled=true,
+                        Text="=",
+                        Font="Gotham"
+                    })
+                    local Seven = Screen:CreateElement("TextButton", {
+                        Size=UDim2.fromScale(0.334, 0.1),
+                        Position=UDim2.fromScale(0.666, 0.3),
+                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
+                        BorderColor3=Color3.fromRGB(255, 255, 255),
+                        TextColor3=Color3.fromRGB(255, 255, 255),
+                        TextScaled=true,
+                        Text="=",
+                        Font="Gotham"
+                    })
+                    local Six = Screen:CreateElement("TextButton", {
+                        Size=UDim2.fromScale(0.333, 0.1),
+                        Position=UDim2.fromScale(0, 0.4),
+                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
+                        BorderColor3=Color3.fromRGB(255, 255, 255),
+                        TextColor3=Color3.fromRGB(255, 255, 255),
+                        TextScaled=true,
+                        Text="=",
+                        Font="Gotham"
+                    })
+                    local Five = Screen:CreateElement("TextButton", {
+                        Size=UDim2.fromScale(0.333, 0.1),
+                        Position=UDim2.fromScale(0.333, 0.4),
+                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
+                        BorderColor3=Color3.fromRGB(255, 255, 255),
+                        TextColor3=Color3.fromRGB(255, 255, 255),
+                        TextScaled=true,
+                        Text="=",
+                        Font="Gotham"
+                    })
+                    local Four = Screen:CreateElement("TextButton", {
+                        Size=UDim2.fromScale(0.334, 0.1),
+                        Position=UDim2.fromScale(0.666, 0.4),
+                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
+                        BorderColor3=Color3.fromRGB(255, 255, 255),
+                        TextColor3=Color3.fromRGB(255, 255, 255),
+                        TextScaled=true,
+                        Text="=",
+                        Font="Gotham"
+                    })
+                    local Three = Screen:CreateElement("TextButton", {
+                        Size=UDim2.fromScale(0.333, 0.1),
+                        Position=UDim2.fromScale(0, 0.5),
+                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
+                        BorderColor3=Color3.fromRGB(255, 255, 255),
+                        TextColor3=Color3.fromRGB(255, 255, 255),
+                        TextScaled=true,
+                        Text="=",
+                        Font="Gotham"
+                    })
+                    local Two = Screen:CreateElement("TextButton", {
+                        Size=UDim2.fromScale(0.333, 0.1),
+                        Position=UDim2.fromScale(0.333, 0.5),
+                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
+                        BorderColor3=Color3.fromRGB(255, 255, 255),
+                        TextColor3=Color3.fromRGB(255, 255, 255),
+                        TextScaled=true,
+                        Text="=",
+                        Font="Gotham"
+                    })
+                    local One = Screen:CreateElement("TextButton", {
+                        Size=UDim2.fromScale(0.334, 0.1),
+                        Position=UDim2.fromScale(0.666, 0.5),
+                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
+                        BorderColor3=Color3.fromRGB(255, 255, 255),
+                        TextColor3=Color3.fromRGB(255, 255, 255),
+                        TextScaled=true,
+                        Text="=",
+                        Font="Gotham"
+                    })
                 end)
 
                 zephyr.states["start_menu_opened"] = true
@@ -208,6 +437,55 @@ function zephyr:Start()
     if not success then
         zephyr:CrashSystem(result)
     end
-end
+end; function zephyr:start() zephyr:Start() end
+
+function zephyr:CreateWindow(title: string)
+    local Window = Screen:CreateElement("Frame", {
+        Size=UDim2.fromScale(1, 1),
+        Position=UDim2.fromScale(0, 0),
+        BackgroundColor3=Color3.fromRGB(0, 0, 0),
+    })
+    Desktop:AddChild(Window)
+
+    local WindowBar = Screen:CreateElement("TextLabel", {
+        Size=UDim2.fromScale(1, 0.1),
+        Position=UDim2.fromScale(0, 0),
+        BackgroundColor3=Color3.fromRGB(30, 30, 30),
+        TextColor3=Color3.fromRGB(255, 255, 255),
+        BorderColor3=Color3.fromRGB(255, 255, 255),
+        Text=title,
+        Font="Gotham",
+        TextScaled=true
+    })
+    Window:AddChild(WindowBar)
+
+    local CloseButton = Screen:CreateElement("TextButton", {
+        Size=UDim2.fromScale(0.04, 1.2),
+        Position=UDim2.fromScale(0, -0.1),
+        BackgroundTransparency=1,
+        TextColor3=Color3.fromRGB(255, 63, 63),
+        TextStrokeColor3=Color3.fromRGB(255, 127, 127),
+        TextStrokeTransparency=0,
+        Text="•",
+        Font="Gotham",
+        TextScaled=true
+    })
+    WindowBar:AddChild(CloseButton)
+
+    CloseButton.MouseButton1Click:Connect(function()
+        Window:Destroy()
+    end)
+
+    local WindowExtension = Screen:CreateElement("Frame", {
+        Size=UDim2.fromScale(1, 0.9),
+        Position=UDim2.fromScale(0, 0.1),
+        BackgroundColor3=Color3.fromRGB(30, 30, 30),
+        BackgroundTransparency=1
+    })
+    Window:AddChild(WindowExtension)
+
+    Beep(1)
+    return WindowExtension
+end; function zephyr:createWindow(title: string) zephyr:CreateWindow(title) end
 
 zephyr:Start()
