@@ -4,6 +4,18 @@ local zephyr = {}
 local Screen = GetPartFromPort(1, "TouchScreen") or error("A TouchScreen is required to run zephyr. Perhaps you are using Screen?")
 Screen:ClearElements()
 
+function zephyr:LoopCheckForPart(port, part)
+    coroutine.wrap(function()
+        while wait(0.1) do
+            if GetPartFromPort(port, part) then
+                return GetPartFromPort(port, part)
+            else
+                zephyr:CrashSystem("A Keyboard is required to run zephyr")
+            end
+        end
+    end)
+end
+
 function zephyr:CrashSystem(result: string, fatal: boolean)
     Screen:ClearElements()
     if fatal == true and fatal ~= nil then
@@ -40,34 +52,42 @@ function zephyr:CrashSystem(result: string, fatal: boolean)
     end
 end
 
-local Keyboard = GetPartFromPort(2, "Keyboard") or zephyr.crashSystem("A Keyboard is required to run zephyr")
-local Speaker = GetPartFromPort(3, "Speaker") or zephyr.crashSystem("A Speaker is required to run zephyr")
-local Disk = GetPartFromPort(4, "Disk") or zephyr.crashSystem("A Disk is required to run zephyr")
+local Keyboard = zephyr:LoopCheckForPart(2, "Keyboard")
+local Speaker = zephyr:LoopCheckForPart(3, "Speaker")
+local Disk = zephyr:LoopCheckForPart(4, "Disk")
 
 local Version = "0.0"
 local Unstable = true
 
 local ScreenSize = Screen:GetDimensions()
 
-local Cursors = Screen:GetCursors()
-
 local Desktop
 
-zephyr.Screen = Screen
-zephyr.TouchScreen = Screen
-zephyr.Keyboard = Keyboard
-zephyr.Speaker = Speaker
-zephyr.Disk = Disk
+zephyr.Library = {
+    Screen = Screen,
+    TouchScreen = Screen,
+    Keyboard = Keyboard,
+    Speaker = Speaker,
+    Disk = Disk,
 
-zephyr.Unstable = Unstable
-zephyr.Version = Version
-zephyr.ScreenSize = ScreenSize
+    Unstable = Unstable,
+    Version = Version,
+    ScreenSize = ScreenSize,
 
-zephyr.Desktop = Desktop
+    Desktop = Desktop
+}
+
+zephyr.Icons = {
+    Cursor = 7091753340,
+}
+
+zephyr.States = {
+    StartMenuOpened = false
+}
 
 if Unstable == true then
     Version = Version .. " (Unstable)"
-    zephyr.Version = Version
+    zephyr.Library.Version = Version
 end
 
 function zephyr:GetUnstableColor()
@@ -78,24 +98,11 @@ function zephyr:GetUnstableColor()
     end
 end
 
-zephyr.icons = {
-    ["cursor"] = 7091753340,
-    ["files"] = {
-        ["prg"] = 7072706318,
-        ["img"] = 7072717759,
-        ["aud"] = 7072722921
-    }
-}
-
-zephyr.states = {
-    ["start_menu_opened"] = false
-}
-
 function zephyr:Start()
     local success, result = pcall(function()
         Screen:ClearElements()
 
-        zephyr.states["start_menu_opened"] = false
+        zephyr.States.StartMenuOpened = false
 
         local PlayerCursors = {}
         coroutine.wrap(function()
@@ -167,7 +174,7 @@ function zephyr:Start()
 
         local StartMenu
         StartButton.MouseButton1Click:Connect(function()
-            if zephyr.states["start_menu_opened"] == false then
+            if zephyr.States.StartMenuOpened == false then
                 StartMenu = Screen:CreateElement("Frame", {
                     Size=UDim2.fromScale(0.4, 0.8),
                     Position=UDim2.fromScale(0, 0.2),
@@ -237,7 +244,7 @@ function zephyr:Start()
                 local CalculatorProgram = MakeProgram("Calculator")
                 CalculatorProgram.MouseButton1Click:Connect(function()
                     StartMenu:Destroy()
-                    zephyr.states["start_menu_opened"] = false
+                    zephyr.States.StartMenuOpened = false
 
                     local Window = zephyr:CreateWindow("Calculator")
                     
@@ -444,10 +451,10 @@ function zephyr:Start()
                     Window:AddChild(Zero)
                 end)
 
-                zephyr.states["start_menu_opened"] = true
-            elseif zephyr.states["start_menu_opened"] == true then
+                zephyr.States.StartMenuOpened = true
+            elseif zephyr.States.StartMenuOpened == true then
                 StartMenu:Destroy()
-                zephyr.states["start_menu_opened"] = false
+                zephyr.States.StartMenuOpened = false
             end
         end)
 
