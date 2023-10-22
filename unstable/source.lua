@@ -338,7 +338,7 @@ function zephyr:Start()
                         BorderColor3=Color3.fromRGB(255, 255, 255),
                         TextColor3=Color3.fromRGB(255, 255, 255),
                         TextScaled=true,
-                        Text="=",
+                        Text="9",
                         Font="Gotham"
                     })
                     local Eight = Screen:CreateElement("TextButton", {
@@ -348,7 +348,7 @@ function zephyr:Start()
                         BorderColor3=Color3.fromRGB(255, 255, 255),
                         TextColor3=Color3.fromRGB(255, 255, 255),
                         TextScaled=true,
-                        Text="=",
+                        Text="8",
                         Font="Gotham"
                     })
                     local Seven = Screen:CreateElement("TextButton", {
@@ -358,7 +358,7 @@ function zephyr:Start()
                         BorderColor3=Color3.fromRGB(255, 255, 255),
                         TextColor3=Color3.fromRGB(255, 255, 255),
                         TextScaled=true,
-                        Text="=",
+                        Text="7",
                         Font="Gotham"
                     })
                     local Six = Screen:CreateElement("TextButton", {
@@ -368,7 +368,7 @@ function zephyr:Start()
                         BorderColor3=Color3.fromRGB(255, 255, 255),
                         TextColor3=Color3.fromRGB(255, 255, 255),
                         TextScaled=true,
-                        Text="=",
+                        Text="6",
                         Font="Gotham"
                     })
                     local Five = Screen:CreateElement("TextButton", {
@@ -378,7 +378,7 @@ function zephyr:Start()
                         BorderColor3=Color3.fromRGB(255, 255, 255),
                         TextColor3=Color3.fromRGB(255, 255, 255),
                         TextScaled=true,
-                        Text="=",
+                        Text="5",
                         Font="Gotham"
                     })
                     local Four = Screen:CreateElement("TextButton", {
@@ -388,7 +388,7 @@ function zephyr:Start()
                         BorderColor3=Color3.fromRGB(255, 255, 255),
                         TextColor3=Color3.fromRGB(255, 255, 255),
                         TextScaled=true,
-                        Text="=",
+                        Text="4",
                         Font="Gotham"
                     })
                     local Three = Screen:CreateElement("TextButton", {
@@ -398,7 +398,7 @@ function zephyr:Start()
                         BorderColor3=Color3.fromRGB(255, 255, 255),
                         TextColor3=Color3.fromRGB(255, 255, 255),
                         TextScaled=true,
-                        Text="=",
+                        Text="3",
                         Font="Gotham"
                     })
                     local Two = Screen:CreateElement("TextButton", {
@@ -408,7 +408,7 @@ function zephyr:Start()
                         BorderColor3=Color3.fromRGB(255, 255, 255),
                         TextColor3=Color3.fromRGB(255, 255, 255),
                         TextScaled=true,
-                        Text="=",
+                        Text="2",
                         Font="Gotham"
                     })
                     local One = Screen:CreateElement("TextButton", {
@@ -418,9 +418,30 @@ function zephyr:Start()
                         BorderColor3=Color3.fromRGB(255, 255, 255),
                         TextColor3=Color3.fromRGB(255, 255, 255),
                         TextScaled=true,
-                        Text="=",
+                        Text="1",
                         Font="Gotham"
                     })
+                    local Zero = Screen:CreateElement("TextButton", {
+                        Size=UDim2.fromScale(0.334, 0.1),
+                        Position=UDim2.fromScale(0.666, 0.5),
+                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
+                        BorderColor3=Color3.fromRGB(255, 255, 255),
+                        TextColor3=Color3.fromRGB(255, 255, 255),
+                        TextScaled=true,
+                        Text="0",
+                        Font="Gotham"
+                    })
+
+                    Window:AddChild(Nine)
+                    Window:AddChild(Eight)
+                    Window:AddChild(Seven)
+                    Window:AddChild(Six)
+                    Window:AddChild(Five)
+                    Window:AddChild(Four)
+                    Window:AddChild(Three)
+                    Window:AddChild(Two)
+                    Window:AddChild(One)
+                    Window:AddChild(Zero)
                 end)
 
                 zephyr.states["start_menu_opened"] = true
