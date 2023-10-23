@@ -1,16 +1,14 @@
 -- zephyrOS --
 local zephyr = {}
 
-local Screen = GetPartFromPort(1, "TouchScreen") or error("A TouchScreen is required to run zephyr. Perhaps you are using Screen?")
+local Screen = GetPartFromPort(1, "TouchScreen") or error("A TouchScreen is required on port 1 to run zephyr. Perhaps you are using Screen?")
 Screen:ClearElements()
 
 function zephyr:LoopCheckForPart(port, part)
     coroutine.wrap(function()
         while wait(0.1) do
-            if GetPartFromPort(port, part) then
-                return GetPartFromPort(port, part)
-            else
-                zephyr:CrashSystem("A Keyboard is required to run zephyr")
+            if GetPartFromPort(port, part) then return GetPartFromPort(port, part) else
+                zephyr:CrashSystem(("A(n) %s is required on port %i to run zephyr."):format(part, port))
             end
         end
     end)
@@ -59,9 +57,8 @@ local Disk = zephyr:LoopCheckForPart(4, "Disk")
 local Version = "0.0"
 local Unstable = true
 
-local ScreenSize = Screen:GetDimensions()
-
 local Desktop
+local StartMenu
 
 zephyr.Library = {
     Screen = Screen,
@@ -72,9 +69,9 @@ zephyr.Library = {
 
     Unstable = Unstable,
     Version = Version,
-    ScreenSize = ScreenSize,
 
-    Desktop = Desktop
+    Desktop = Desktop,
+    StartMenu = StartMenu
 }
 
 zephyr.Icons = {
@@ -133,17 +130,18 @@ function zephyr:Start()
         })
 
         local DebugInfo = Screen:CreateElement("TextLabel", {
-            Size=UDim2.fromScale(1, 1),
-            Position=UDim2.fromScale(0, -1),
+            Size=UDim2.fromScale(1, 0.1),
+            Position=UDim2.fromScale(0, 0.9),
             BackgroundTransparency=1,
             TextTransparency=0.5,
             TextColor3=Color3.fromRGB(255, 255, 255),
             Text=("zephyrOS %s\nWaste of Space (Stable)"):format(Version),
             Font="Gotham",
             TextXAlignment="Right",
-            TextScaled=true
+            TextScaled=true,
+            ZIndex=-1
         })
-        Taskbar:AddChild(DebugInfo)
+        Desktop:AddChild(DebugInfo)
 
         local StartButton = Screen:CreateElement("TextButton", {
             Size=UDim2.fromScale(0.07, 1),
@@ -172,7 +170,6 @@ function zephyr:Start()
         })
         Taskbar:AddChild(zephyrLua)
 
-        local StartMenu
         StartButton.MouseButton1Click:Connect(function()
             if zephyr.States.StartMenuOpened == false then
                 StartMenu = Screen:CreateElement("Frame", {
@@ -238,217 +235,111 @@ function zephyr:Start()
                     })
                     Programs:AddChild(Program)
                     TotalPrograms += 1
+
+                    Program.MouseButton1Click:Connect(function()
+                        StartMenu:Destroy()
+                        zephyr.States.StartMenuOpened = false
+                    end)
+
                     return Program
                 end
 
                 local CalculatorProgram = MakeProgram("Calculator")
                 CalculatorProgram.MouseButton1Click:Connect(function()
-                    StartMenu:Destroy()
-                    zephyr.States.StartMenuOpened = false
+                    local Calculator = {}
+
+                    Calculator.IsNum1 = true
+                    Calculator.IsNum2 = false
+
+                    Calculator.Num1 = nil
+                    Calculator.Operation = nil
+                    Calculator.Num2 = nil
 
                     local Window = zephyr:CreateWindow("Calculator")
+
+                    function Calculator:CreateElement(object: string, text: string, size: UDim2, position: UDim2)
+                        local Object = Screen:CreateElement(object, {
+                            Size=size,
+                            Position=position,
+                            BackgroundColor3=Color3.fromRGB(30, 30, 30),
+                            BorderColor3=Color3.fromRGB(255, 255, 255),
+                            TextColor3=Color3.fromRGB(255, 255, 255),
+                            TextScaled=true,
+                            Text=text,
+                            Font="Gotham"
+                        })
+                        Window:AddChild(Object)
+                        return Object
+                    end
+
+                    function Calculator:Query(query: string, isOperation: boolean)
+                        if isOperation == false then
+                            if Calculator.IsNum1 == true then
+                                Calculator.Num1 = Calculator.Num1 .. query
+                                Num1:Configure({Text=Calculator.Num1})
+                            elseif Calculator.IsNum2 == true then
+                                Calculator.Num2 = Calculator.Num2 .. query
+                                Num2:Configure({Text=Calculator.Num2})
+                            end
+                        elseif isOperation == true and Calculator.IsNum2 == false then
+                            Calculator.IsNum1 = false
+                            Operation:Configure({Text=query})
+                            Calculator.IsNum1 = true
+                        end
+                    end
                     
-                    local Num1 = Screen:CreateElement("TextLabel", {
-                        Size=UDim2.fromScale(0.4, 0.2),
-                        Position=UDim2.fromScale(0, 0),
-                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
-                        BorderColor3=Color3.fromRGB(255, 255, 255),
-                        TextColor3=Color3.fromRGB(255, 255, 255),
-                        TextScaled=true,
-                        Text="",
-                        Font="Gotham"
-                    })
-                    local Type = Screen:CreateElement("TextLabel", {
-                        Size=UDim2.fromScale(0.2, 0.2),
-                        Position=UDim2.fromScale(0.4, 0),
-                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
-                        BorderColor3=Color3.fromRGB(255, 255, 255),
-                        TextColor3=Color3.fromRGB(255, 255, 255),
-                        TextScaled=true,
-                        Text="",
-                        Font="Gotham"
-                    })
-                    local Num2 = Screen:CreateElement("TextLabel", {
-                        Size=UDim2.fromScale(0.4, 0.2),
-                        Position=UDim2.fromScale(0.6, 0),
-                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
-                        BorderColor3=Color3.fromRGB(255, 255, 255),
-                        TextColor3=Color3.fromRGB(255, 255, 255),
-                        TextScaled=true,
-                        Text="",
-                        Font="Gotham"
-                    })
-                    Window:AddChild(Num1)
-                    Window:AddChild(Type)
-                    Window:AddChild(Num2)
+                    local Num1 = Calculator:CreateElement("TextLabel", "", UDim2.fromScale(0.4, 0.1), UDim2.fromScale(0, 0))
+                    local Operation = Calculator:CreateElement("TextLabel", "", UDim2.fromScale(0.2, 0.1), UDim2.fromScale(0.4, 0))
+                    local Num2 = Calculator:CreateElement("TextLabel", "", UDim2.fromScale(0.4, 0.1), UDim2.fromScale(0.6, 0))
 
-                    local Add = Screen:CreateElement("TextButton", {
-                        Size=UDim2.fromScale(0.2, 0.1),
-                        Position=UDim2.fromScale(0, 0.2),
-                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
-                        BorderColor3=Color3.fromRGB(255, 255, 255),
-                        TextColor3=Color3.fromRGB(255, 255, 255),
-                        TextScaled=true,
-                        Text="+",
-                        Font="Gotham"
-                    })
-                    local Subtract = Screen:CreateElement("TextButton", {
-                        Size=UDim2.fromScale(0.2, 0.1),
-                        Position=UDim2.fromScale(0.2, 0.2),
-                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
-                        BorderColor3=Color3.fromRGB(255, 255, 255),
-                        TextColor3=Color3.fromRGB(255, 255, 255),
-                        TextScaled=true,
-                        Text="-",
-                        Font="Gotham"
-                    })
-                    local Multiply = Screen:CreateElement("TextButton", {
-                        Size=UDim2.fromScale(0.2, 0.1),
-                        Position=UDim2.fromScale(0.4, 0.2),
-                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
-                        BorderColor3=Color3.fromRGB(255, 255, 255),
-                        TextColor3=Color3.fromRGB(255, 255, 255),
-                        TextScaled=true,
-                        Text="×",
-                        Font="Gotham"
-                    })
-                    local Divide = Screen:CreateElement("TextButton", {
-                        Size=UDim2.fromScale(0.2, 0.1),
-                        Position=UDim2.fromScale(0.6, 0.2),
-                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
-                        BorderColor3=Color3.fromRGB(255, 255, 255),
-                        TextColor3=Color3.fromRGB(255, 255, 255),
-                        TextScaled=true,
-                        Text="÷",
-                        Font="Gotham"
-                    })
-                    local Equal = Screen:CreateElement("TextButton", {
-                        Size=UDim2.fromScale(0.2, 0.1),
-                        Position=UDim2.fromScale(0.8, 0.2),
-                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
-                        BorderColor3=Color3.fromRGB(255, 255, 255),
-                        TextColor3=Color3.fromRGB(255, 255, 255),
-                        TextScaled=true,
-                        Text="=",
-                        Font="Gotham"
-                    })
-                    Window:AddChild(Add)
-                    Window:AddChild(Subtract)
-                    Window:AddChild(Multiply)
-                    Window:AddChild(Divide)
-                    Window:AddChild(Equal)
+                    local Add = Calculator:CreateElement("TextButton", "+", UDim2.fromScale(1 / 7, 0.1), UDim2.fromScale((1 / 7) * 0, 0.1))
+                    Add.MouseButton1Click:Connect(function() Calculator:Query("+", true) end)
+                    local Subtract = Calculator:CreateElement("TextButton", "-", UDim2.fromScale(1 / 7, 0.1), UDim2.fromScale((1 / 7) * 1, 0.1))
+                    Subtract.MouseButton1Click:Connect(function() Calculator:Query("-", true) end)
+                    local Multiply = Calculator:CreateElement("TextButton", "×", UDim2.fromScale(1 / 7, 0.1), UDim2.fromScale((1 / 7) * 2, 0.1))
+                    Multiply.MouseButton1Click:Connect(function() Calculator:Query("×", true) end)
+                    local Divide = Calculator:CreateElement("TextButton", "÷", UDim2.fromScale(1 / 7, 0.1), UDim2.fromScale((1 / 7) * 3, 0.1))
+                    Divide.MouseButton1Click:Connect(function() Calculator:Query("÷", true) end)
+                    local Exponent = Calculator:CreateElement("TextButton", "^", UDim2.fromScale(1 / 7, 0.1), UDim2.fromScale((1 / 7) * 4, 0.1))
+                    Exponent.MouseButton1Click:Connect(function() Calculator:Query("^", true) end)
+                    local SquareRoot = Calculator:CreateElement("TextButton", "√", UDim2.fromScale(1 / 7, 0.1), UDim2.fromScale((1 / 7) * 5, 0.1))
+                    SquareRoot.MouseButton1Click:Connect(function() Calculator:Query("√", true) end)
+                    local Equal = Calculator:CreateElement("TextButton", "=", UDim2.fromScale(1 / 7, 0.1), UDim2.fromScale((1 / 7) * 6, 0.1))
 
-                    local Nine = Screen:CreateElement("TextButton", {
-                        Size=UDim2.fromScale(0.333, 0.1),
-                        Position=UDim2.fromScale(0, 0.3),
-                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
-                        BorderColor3=Color3.fromRGB(255, 255, 255),
-                        TextColor3=Color3.fromRGB(255, 255, 255),
-                        TextScaled=true,
-                        Text="9",
-                        Font="Gotham"
-                    })
-                    local Eight = Screen:CreateElement("TextButton", {
-                        Size=UDim2.fromScale(0.333, 0.1),
-                        Position=UDim2.fromScale(0.333, 0.3),
-                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
-                        BorderColor3=Color3.fromRGB(255, 255, 255),
-                        TextColor3=Color3.fromRGB(255, 255, 255),
-                        TextScaled=true,
-                        Text="8",
-                        Font="Gotham"
-                    })
-                    local Seven = Screen:CreateElement("TextButton", {
-                        Size=UDim2.fromScale(0.334, 0.1),
-                        Position=UDim2.fromScale(0.666, 0.3),
-                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
-                        BorderColor3=Color3.fromRGB(255, 255, 255),
-                        TextColor3=Color3.fromRGB(255, 255, 255),
-                        TextScaled=true,
-                        Text="7",
-                        Font="Gotham"
-                    })
-                    local Six = Screen:CreateElement("TextButton", {
-                        Size=UDim2.fromScale(0.333, 0.1),
-                        Position=UDim2.fromScale(0, 0.4),
-                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
-                        BorderColor3=Color3.fromRGB(255, 255, 255),
-                        TextColor3=Color3.fromRGB(255, 255, 255),
-                        TextScaled=true,
-                        Text="6",
-                        Font="Gotham"
-                    })
-                    local Five = Screen:CreateElement("TextButton", {
-                        Size=UDim2.fromScale(0.333, 0.1),
-                        Position=UDim2.fromScale(0.333, 0.4),
-                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
-                        BorderColor3=Color3.fromRGB(255, 255, 255),
-                        TextColor3=Color3.fromRGB(255, 255, 255),
-                        TextScaled=true,
-                        Text="5",
-                        Font="Gotham"
-                    })
-                    local Four = Screen:CreateElement("TextButton", {
-                        Size=UDim2.fromScale(0.334, 0.1),
-                        Position=UDim2.fromScale(0.666, 0.4),
-                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
-                        BorderColor3=Color3.fromRGB(255, 255, 255),
-                        TextColor3=Color3.fromRGB(255, 255, 255),
-                        TextScaled=true,
-                        Text="4",
-                        Font="Gotham"
-                    })
-                    local Three = Screen:CreateElement("TextButton", {
-                        Size=UDim2.fromScale(0.333, 0.1),
-                        Position=UDim2.fromScale(0, 0.5),
-                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
-                        BorderColor3=Color3.fromRGB(255, 255, 255),
-                        TextColor3=Color3.fromRGB(255, 255, 255),
-                        TextScaled=true,
-                        Text="3",
-                        Font="Gotham"
-                    })
-                    local Two = Screen:CreateElement("TextButton", {
-                        Size=UDim2.fromScale(0.333, 0.1),
-                        Position=UDim2.fromScale(0.333, 0.5),
-                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
-                        BorderColor3=Color3.fromRGB(255, 255, 255),
-                        TextColor3=Color3.fromRGB(255, 255, 255),
-                        TextScaled=true,
-                        Text="2",
-                        Font="Gotham"
-                    })
-                    local One = Screen:CreateElement("TextButton", {
-                        Size=UDim2.fromScale(0.334, 0.1),
-                        Position=UDim2.fromScale(0.666, 0.5),
-                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
-                        BorderColor3=Color3.fromRGB(255, 255, 255),
-                        TextColor3=Color3.fromRGB(255, 255, 255),
-                        TextScaled=true,
-                        Text="1",
-                        Font="Gotham"
-                    })
-                    local Zero = Screen:CreateElement("TextButton", {
-                        Size=UDim2.fromScale(0.334, 0.1),
-                        Position=UDim2.fromScale(0.666, 0.5),
-                        BackgroundColor3=Color3.fromRGB(30, 30, 30),
-                        BorderColor3=Color3.fromRGB(255, 255, 255),
-                        TextColor3=Color3.fromRGB(255, 255, 255),
-                        TextScaled=true,
-                        Text="0",
-                        Font="Gotham"
-                    })
+                    local Nine = Calculator:CreateElement("TextButton", "9", UDim2.fromScale(1 / 3, 0.2), UDim2.fromScale(0, 0.2))
+                    Nine.MouseButton1Click:Connect(function() Calculator:Query("9", false) end)
+                    local Eight = Calculator:CreateElement("TextButton", "8", UDim2.fromScale(1 / 3, 0.2), UDim2.fromScale(1 / 3, 0.2))
+                    Eight.MouseButton1Click:Connect(function() Calculator:Query("8", false) end)
+                    local Seven = Calculator:CreateElement("TextButton", "7", UDim2.fromScale(1 / 3, 0.2), UDim2.fromScale((1 / 3) * 2, 0.2))
+                    Seven.MouseButton1Click:Connect(function() Calculator:Query("7", false) end)
+                    local Six = Calculator:CreateElement("TextButton", "6", UDim2.fromScale(1 / 3, 0.2), UDim2.fromScale(0, 0.4))
+                    Six.MouseButton1Click:Connect(function() Calculator:Query("6", false) end)
+                    local Five = Calculator:CreateElement("TextButton", "5", UDim2.fromScale(1 / 3, 0.2), UDim2.fromScale(1 / 3, 0.4))
+                    Five.MouseButton1Click:Connect(function() Calculator:Query("5", false) end)
+                    local Four = Calculator:CreateElement("TextButton", "4", UDim2.fromScale(1 / 3, 0.2), UDim2.fromScale((1 / 3) * 2, 0.4))
+                    Four.MouseButton1Click:Connect(function() Calculator:Query("4", false) end)
+                    local Three = Calculator:CreateElement("TextButton", "3", UDim2.fromScale(1 / 3, 0.2), UDim2.fromScale(0, 0.6))
+                    Three.MouseButton1Click:Connect(function() Calculator:Query("3", false) end)
+                    local Two = Calculator:CreateElement("TextButton", "2", UDim2.fromScale(1 / 3, 0.2), UDim2.fromScale(1 / 3, 0.6))
+                    Two.MouseButton1Click:Connect(function() Calculator:Query("2", false) end)
+                    local One = Calculator:CreateElement("TextButton", "1", UDim2.fromScale(1 / 3, 0.2), UDim2.fromScale((1 / 3) * 2, 0.6))
+                    One.MouseButton1Click:Connect(function() Calculator:Query("1", false) end)
+                    local Zero = Calculator:CreateElement("TextButton", "0", UDim2.fromScale(1, 0.2), UDim2.fromScale(0, 0.8))
+                    Zero.MouseButton1Click:Connect(function() Calculator:Query("0", false) end)
 
-                    Window:AddChild(Nine)
-                    Window:AddChild(Eight)
-                    Window:AddChild(Seven)
-                    Window:AddChild(Six)
-                    Window:AddChild(Five)
-                    Window:AddChild(Four)
-                    Window:AddChild(Three)
-                    Window:AddChild(Two)
-                    Window:AddChild(One)
-                    Window:AddChild(Zero)
+                    local Clear = Calculator:CreateElement("TextButton", "CE", UDim2.fromScale(0.2, 0.2), UDim2.fromScale(0.8, 0.8))
+                    Clear.MouseButton1Click:Connect(function()
+                        Calculator.IsNum1 = true
+                        Calculator.IsNum2 = false
+
+                        Calculator.Num1 = nil
+                        Calculator.Operation = nil
+                        Calculator.Num2 = nil
+
+                        Num1:Configure({Text=""})
+                        Operation:Configure({Text=""})
+                        Num2:Configure({Text=""})
+                    end)
                 end)
 
                 zephyr.States.StartMenuOpened = true
@@ -487,12 +378,14 @@ function zephyr:CreateWindow(title: string)
     })
     Window:AddChild(WindowBar)
 
+    wait(0.1)
+
     local CloseButton = Screen:CreateElement("TextButton", {
         Size=UDim2.fromScale(0.04, 1.2),
         Position=UDim2.fromScale(0, -0.1),
         BackgroundTransparency=1,
         TextColor3=Color3.fromRGB(255, 63, 63),
-        TextStrokeColor3=Color3.fromRGB(255, 127, 127),
+        TextStrokeColor3=Color3.fromRGB(255, 96, 96),
         TextStrokeTransparency=0,
         Text="•",
         Font="Gotham",
