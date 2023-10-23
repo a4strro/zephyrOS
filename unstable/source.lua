@@ -53,7 +53,8 @@ end
 local Keyboard = zephyr:LoopCheckForPart(2, "Keyboard")
 local Speaker = zephyr:LoopCheckForPart(3, "Speaker")
 local Disk = zephyr:LoopCheckForPart(4, "Disk")
-local Instrument = zephyr:LoopCheckForPart(5, "Instrument")
+local Modem = zephyr:LoopCheckForPart(5, "Modem")
+local Instrument = zephyr:LoopCheckForPart(6, "Instrument")
 
 local Version = "0.0"
 local Unstable = true
@@ -67,6 +68,7 @@ zephyr.Library = {
     Keyboard = Keyboard,
     Speaker = Speaker,
     Disk = Disk,
+    Modem = Modem,
     Instrument = Instrument,
 
     Unstable = Unstable,
@@ -160,7 +162,7 @@ function zephyr:Start()
 
         coroutine.resume(coroutine.create(function()
             while wait(0.5) do
-                RegionTime:Configure({Text=Instrument:GetReading(3)})
+                RegionTime:Configure({Text=("%s"):format(Instrument:GetReading(3))})
             end
         end))
 
@@ -190,6 +192,10 @@ function zephyr:Start()
             RichText=true,
         })
         Taskbar:AddChild(zephyrLua)
+
+        zephyrLua.MouseButton1Click:Connect(function()
+            local Window = zephyr:CreateWindow("zephyr.lua")
+        end)
 
         StartButton.MouseButton1Click:Connect(function()
             if zephyr.States.StartMenuOpened == false then
@@ -276,7 +282,7 @@ function zephyr:Start()
                     Calculator.Operation = nil
                     Calculator.Num2 = nil
 
-                    local Window = zephyr:CreateWindow("Calculator")
+                    local Window = zephyr:CreateWindow("Calculator [Bugged]")
 
                     function Calculator:CreateElement(object: string, text: string, size: UDim2, position: UDim2)
                         local Object = Screen:CreateElement(object, {
@@ -377,7 +383,7 @@ function zephyr:Start()
     if not success then
         zephyr:CrashSystem(result)
     end
-end; function zephyr:start() zephyr:Start() end
+end
 
 function zephyr:CreateWindow(title: string)
     local Window = Screen:CreateElement("Frame", {
@@ -426,8 +432,12 @@ function zephyr:CreateWindow(title: string)
     })
     Window:AddChild(WindowExtension)
 
+    function self:Destroy()
+        Window:Destroy()
+    end
+
     Beep(1)
     return WindowExtension
-end; function zephyr:createWindow(title: string) zephyr:CreateWindow(title) end
+end
 
 zephyr:Start()
