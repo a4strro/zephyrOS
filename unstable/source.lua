@@ -5,13 +5,13 @@ local Screen = GetPartFromPort(1, "TouchScreen") or error("A TouchScreen is requ
 Screen:ClearElements()
 
 function zephyr:LoopCheckForPart(port, part)
-    coroutine.wrap(function()
+    coroutine.resume(coroutine.create(function()
         while wait(0.1) do
             if GetPartFromPort(port, part) then return GetPartFromPort(port, part) else
                 zephyr:CrashSystem(("A(n) %s is required on port %i to run zephyr."):format(part, port))
             end
         end
-    end)
+    end))
 end
 
 function zephyr:CrashSystem(result: string, fatal: boolean)
@@ -104,11 +104,11 @@ function zephyr:Start()
         zephyr.States.StartMenuOpened = false
 
         local PlayerCursors = {}
-        coroutine.wrap(function()
+        coroutine.resume(coroutine.create(function()
             for _, cursor in Screen:GetCursors() do
 
             end
-        end)
+        end))
 
         Desktop = Screen:CreateElement("TextLabel", {
             Size=UDim2.fromScale(1, 0.9),
@@ -146,8 +146,8 @@ function zephyr:Start()
         Desktop:AddChild(DebugInfo)
 
         local RegionTime = Screen:CreateElement("TextLabel", {
-            Size=UDim2.fromScale(0.2, 1),
-            Position=UDim2.fromScale(0.8, 0),
+            Size=UDim2.fromScale(0.12, 1),
+            Position=UDim2.fromScale(0.88, 0),
             BackgroundColor3=Color3.fromRGB(30, 30, 30),
             BorderColor3=Color3.fromRGB(255, 255, 255),
             TextColor3=Color3.fromRGB(255, 255, 255),
@@ -158,11 +158,11 @@ function zephyr:Start()
         })
         Taskbar:AddChild(RegionTime)
 
-        coroutine.wrap(function()
+        coroutine.resume(coroutine.create(function()
             while wait(0.5) do
                 RegionTime:Configure({Text=Instrument:GetReading(3)})
             end
-        end)
+        end))
 
         local StartButton = Screen:CreateElement("TextButton", {
             Size=UDim2.fromScale(0.07, 1),
