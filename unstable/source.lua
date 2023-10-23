@@ -53,6 +53,7 @@ end
 local Keyboard = zephyr:LoopCheckForPart(2, "Keyboard")
 local Speaker = zephyr:LoopCheckForPart(3, "Speaker")
 local Disk = zephyr:LoopCheckForPart(4, "Disk")
+local Instrument = zephyr:LoopCheckForPart(5, "Instrument")
 
 local Version = "0.0"
 local Unstable = true
@@ -66,6 +67,7 @@ zephyr.Library = {
     Keyboard = Keyboard,
     Speaker = Speaker,
     Disk = Disk,
+    Instrument = Instrument,
 
     Unstable = Unstable,
     Version = Version,
@@ -142,6 +144,25 @@ function zephyr:Start()
             ZIndex=-1
         })
         Desktop:AddChild(DebugInfo)
+
+        local RegionTime = Screen:CreateElement("TextLabel", {
+            Size=UDim2.fromScale(0.2, 1),
+            Position=UDim2.fromScale(0.8, 0),
+            BackgroundColor3=Color3.fromRGB(30, 30, 30),
+            BorderColor3=Color3.fromRGB(255, 255, 255),
+            TextColor3=Color3.fromRGB(255, 255, 255),
+            TextScaled=true,
+            Text="--:--",
+            Font="Gotham",
+            RichText=true,
+        })
+        Taskbar:AddChild(RegionTime)
+
+        coroutine.wrap(function()
+            while wait(0.5) do
+                RegionTime:Configure(Text=Instrument:GetReading(3))
+            end
+        end)
 
         local StartButton = Screen:CreateElement("TextButton", {
             Size=UDim2.fromScale(0.07, 1),
@@ -272,7 +293,7 @@ function zephyr:Start()
                         return Object
                     end
 
-                    function Calculator:Query(query: string, isOperation: boolean)
+                    function Calculator:Query(query: string, isOperation: bool)
                         if isOperation == false then
                             if Calculator.IsNum1 == true then
                                 Calculator.Num1 = Calculator.Num1 .. query
