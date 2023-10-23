@@ -160,7 +160,7 @@ function zephyr:Start()
 
         coroutine.wrap(function()
             while wait(0.5) do
-                RegionTime:Configure(Text=Instrument:GetReading(3))
+                RegionTime:Configure({Text=Instrument:GetReading(3)})
             end
         end)
 
