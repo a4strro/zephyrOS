@@ -202,9 +202,10 @@ function zephyr:Start()
                 BackgroundColor3=Color3.fromRGB(30, 30, 30),
                 TextColor3=Color3.fromRGB(255, 255, 255),
                 TextSize=40,
-                Text="Copy and paste your zephyr.lua code using the keyboard. [zephyr.lua coding is experimental, doesn't actually do anything yet]",
+                Text="Copy and paste your zephyr.lua code using the keyboard.\n[zephyr.lua coding is experimental, doesn't actually do anything yet]",
                 Font="Gotham"
             })
+            Window:AddChild(Text)
 
             Keyboard:Connect("TextInputted", function()
                 if not Window then return end
