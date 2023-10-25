@@ -199,7 +199,7 @@ function zephyr:Start()
             local Text = Screen:CreateElement("TextLabel", {
                 Size=UDim2.fromScale(1, 1),
                 Position=UDim2.fromScale(0, 0),
-                BackgroundColor3=Color3.fromRGB(30, 30, 30),
+                BackgroundTransparency=1,
                 TextColor3=Color3.fromRGB(255, 255, 255),
                 TextSize=40,
                 Text="Copy and paste your zephyr.lua code using the keyboard.\n[zephyr.lua coding is experimental, doesn't actually do anything yet]",
@@ -409,6 +409,10 @@ function zephyr:CreateWindow(title: string)
     })
     Desktop:AddChild(Window)
 
+    function self:Destroy()
+        Window:Destroy()
+    end
+
     local WindowBar = Screen:CreateElement("TextLabel", {
         Size=UDim2.fromScale(1, 0.1),
         Position=UDim2.fromScale(0, 0),
@@ -447,10 +451,6 @@ function zephyr:CreateWindow(title: string)
         BackgroundTransparency=1
     })
     Window:AddChild(WindowExtension)
-
-    function self:Destroy()
-        Window:Destroy()
-    end
 
     Beep(1)
     return WindowExtension
