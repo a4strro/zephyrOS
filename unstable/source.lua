@@ -90,11 +90,6 @@ zephyr.States = {
     StartMenuOpened = false
 }
 
-if GetPartFromPort(9, "Switch") then
-    local Switch = GetPartFromPort(9, "Switch")
-    Switch:Configure({SwitchValue=true})
-end
-
 if Unstable == true then
     Version = Version .. " (Unstable)"
     zephyr.Library.Version = Version
@@ -400,6 +395,11 @@ function zephyr:Start()
                 zephyr.States.StartMenuOpened = false
             end
         end)
+
+        if GetPartFromPort(9, "Switch") then
+            local Switch = GetPartFromPort(9, "Switch")
+            Switch:Configure({SwitchValue=true})
+        end
 
         Beep(1)
         return success
