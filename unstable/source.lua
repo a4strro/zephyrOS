@@ -195,6 +195,21 @@ function zephyr:Start()
 
         zephyrLua.MouseButton1Click:Connect(function()
             local Window = zephyr:CreateWindow("zephyr.lua")
+            
+            local Text = Screen:CreateElement("TextLabel", {
+                Size=UDim2.fromScale(1, 1),
+                Position=UDim2.fromScale(0, 0),
+                BackgroundColor3=Color3.fromRGB(30, 30, 30),
+                TextColor3=Color3.fromRGB(255, 255, 255),
+                TextSize=40,
+                Text="Copy and paste your zephyr.lua code using the keyboard. [zephyr.lua coding is experimental, doesn't actually do anything yet]",
+                Font="Gotham"
+            })
+
+            Keyboard:Connect("TextInputted", function()
+                if not Window then return end
+                Text:Configure({Text="Found pasted code."})
+            end)
         end)
 
         StartButton.MouseButton1Click:Connect(function()
