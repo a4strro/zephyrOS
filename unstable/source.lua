@@ -42,6 +42,10 @@ function zephyr:CrashSystem(result: string, fatal: boolean)
         })
     end
     Beep(0.5)
+    if GetPartFromPort(9, "Switch") then
+        local Switch = GetPartFromPort(9, "Switch")
+        Switch:Configure({SwitchValue=false})
+    end
     if fatal == true and fatal ~= nil then
         wait(9e9)
     else
@@ -85,6 +89,11 @@ zephyr.Icons = {
 zephyr.States = {
     StartMenuOpened = false
 }
+
+if GetPartFromPort(9, "Switch") then
+    local Switch = GetPartFromPort(9, "Switch")
+    Switch:Configure({SwitchValue=true})
+end
 
 if Unstable == true then
     Version = Version .. " (Unstable)"
